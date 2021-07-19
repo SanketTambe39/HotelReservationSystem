@@ -18,16 +18,16 @@ public class HotelReservationSystemImpl implements HotelReservationSystemService
         long Duration = EndDate.getTime()-StartDate.getTime();
         int Days = (int) TimeUnit.DAYS.convert(Duration,TimeUnit.MILLISECONDS);
 
-        HotelList.add(new HotelDetails("Lakewood", 110));
-        HotelList.add(new HotelDetails("Bridgewood", 150));
-        HotelList.add(new HotelDetails("Ridgewood", 220));
+        HotelList.add(new HotelDetails("Lakewood", 110,90));
+        HotelList.add(new HotelDetails("Bridgewood", 150,50));
+        HotelList.add(new HotelDetails("Ridgewood", 220,150));
 
         for (int hotel = 0; hotel < HotelList.size(); hotel++) {
-            int newRate = HotelList.get(hotel).getRegularRate() * (Days+1);
-            HotelList.get(hotel).setRegularRate(newRate);
+            int newRate = HotelList.get(hotel).getWeekdayRate() * (Days+1);
+            HotelList.get(hotel).setWeekdayRate(newRate);
         }
-        int regularRate = HotelList.stream().min(Comparator.comparing(HotelDetails::getRegularRate)).get().getRegularRate();
-        String hotelName = HotelList.stream().min(Comparator.comparing(HotelDetails::getRegularRate)).get().getHotelName();
+        int regularRate = HotelList.stream().min(Comparator.comparing(HotelDetails::getWeekdayRate)).get().getWeekdayRate();
+        String hotelName = HotelList.stream().min(Comparator.comparing(HotelDetails::getWeekdayRate)).get().getHotelName();
 
         System.out.println(hotelName + ", Total Rates: $" + regularRate);
 
@@ -40,5 +40,4 @@ public class HotelReservationSystemImpl implements HotelReservationSystemService
         date = dateFormat.parse(dateString);
         return date;
     }
-	
 }
