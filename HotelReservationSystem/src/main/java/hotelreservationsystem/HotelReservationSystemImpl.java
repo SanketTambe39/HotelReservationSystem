@@ -4,10 +4,14 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class HotelReservationSystemImpl implements HotelReservationSystemService {
 
 	ArrayList<HotelDetails> HotelList = new ArrayList<>();
+	ArrayList<String> cheapestHotelNameList;
+    HashMap<String, Integer> hotelRatingMap;
 
 	 public void addHotelDetails(String hotelName, int weekDayRate, int weekendRate, int rating) {
 	        HotelDetails hotelDetails = new HotelDetails(hotelName, weekDayRate, weekendRate, rating);        
@@ -20,7 +24,8 @@ public class HotelReservationSystemImpl implements HotelReservationSystemService
         addHotelDetails("Ridgewood",220, 150, 5);
         LocalDate arrivalDate = convertStringToDate(arrival);
         LocalDate checkoutDate = convertStringToDate(checkout);
-        ArrayList<String> cheapestHotelNameList = new ArrayList<>();
+        cheapestHotelNameList = new ArrayList<>();
+        hotelRatingMap = new HashMap<>();
         int minRate = Integer.MAX_VALUE;
         for (HotelDetails hotelDetails : HotelList) {
             LocalDate start = arrivalDate;
@@ -41,12 +46,25 @@ public class HotelReservationSystemImpl implements HotelReservationSystemService
             if (hotelRent <= minRate) {
                 minRate = hotelRent;
                 cheapestHotelNameList.add(hotelDetails.getHotelName());
+                hotelRatingMap.put(hotelDetails.getHotelName(), hotelDetails.getRating());
             }
         }
         for (String hotel: cheapestHotelNameList){
             System.out.println("Hotel Name: "+hotel+" Total Rate $"+minRate);
         }
         return cheapestHotelNameList;
+    }
+    
+    public String cheapestBestRatedHotel(String arrival, String checkout) {
+
+        findCheapestHotelForRegularCustomer(arrival, checkout);
+        Map.Entry<String, Integer> cheapestBestRatedHotel = null;
+        for (Map.Entry<String, Integer> entry : hotelRatingMap.entrySet()) {
+            if (cheapestBestRatedHotel == null || entry.getValue().compareTo(cheapestBestRatedHotel.getValue()) > 0) {
+                cheapestBestRatedHotel = entry;
+            }
+        }
+        return cheapestBestRatedHotel.getKey();
     }
 
     public LocalDate convertStringToDate(String dateString) {
