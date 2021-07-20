@@ -9,15 +9,15 @@ public class HotelReservationSystemImpl implements HotelReservationSystemService
 
 	ArrayList<HotelDetails> HotelList = new ArrayList<>();
 
-    public void addHotelDetails(String hotelName, int weekDayRate, int weekendRate) {
-        HotelDetails hotelDetails = new HotelDetails(hotelName, weekDayRate, weekendRate);
-        HotelList.add(hotelDetails);
+	 public void addHotelDetails(String hotelName, int weekDayRate, int weekendRate, int rating) {
+	        HotelDetails hotelDetails = new HotelDetails(hotelName, weekDayRate, weekendRate, rating);        
+	        HotelList.add(hotelDetails);
     }
 
     public ArrayList<String> findCheapestHotelForRegularCustomer(String arrival, String checkout) {
-        addHotelDetails("Lakewood",110,90);
-        addHotelDetails("Bridgewood",150, 50);
-        addHotelDetails("Ridgewood",220, 150);
+    	addHotelDetails("Lakewood",110,90, 3);
+        addHotelDetails("Bridgewood",150, 50, 4);
+        addHotelDetails("Ridgewood",220, 150, 5);
         LocalDate arrivalDate = convertStringToDate(arrival);
         LocalDate checkoutDate = convertStringToDate(checkout);
         ArrayList<String> cheapestHotelNameList = new ArrayList<>();
