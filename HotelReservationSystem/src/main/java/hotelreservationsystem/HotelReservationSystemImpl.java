@@ -4,22 +4,54 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class HotelReservationSystemImpl implements HotelReservationSystemService {
 
 	ArrayList<HotelDetails> HotelList = new ArrayList<>();
 	ArrayList<String> cheapestHotelNameList;
     HashMap<String, Integer> hotelRatingMap;
-    HashMap<String, Integer> hotelRateMap;
+    HashMap<String, Long> hotelRateMap;
+    Long minRate;
 
     public void addHotelDetails(String hotelName, int weekDayRate, int weekendRate, int rating, int rewardCutomerWeekdayRates, int rewardCustomerWeekendRates) 
     {
         HotelDetails hotelDetails = new HotelDetails(hotelName, weekDayRate, weekendRate, rating, rewardCutomerWeekdayRates, rewardCustomerWeekendRates);        
 	        HotelList.add(hotelDetails);
     }
+    
+    public static long calculateRewardCost(HotelDetails hotelDetails, String arrival, String checkout, boolean rewardCustomer) {
+        LocalDate start = convertStringToDate(arrival);
+        LocalDate end = convertStringToDate(checkout);
+        long totalCost = 0;
+        end = end.plusDays(1);
+        while (!(start.equals(end))) {
 
+            int day = start.getDayOfWeek().getValue();
+
+            if (day == 6 || day == 7){
+                if(rewardCustomer) {
+                    totalCost = totalCost + hotelDetails.getRewardCustomerWeekendrate();
+                } else {
+                    totalCost = totalCost + hotelDetails.getWeekendRate();
+                }
+            }
+            else{
+                if(rewardCustomer) {
+                    totalCost = totalCost + hotelDetails.getRewardCustomerWeekdayRate();
+                } else {
+                    totalCost = totalCost + hotelDetails.getWeekdayRate();
+                }
+            }
+            start = start.plusDays(1);
+
+        }
+        return totalCost;
+    }
     public ArrayList<String> findCheapestHotel(String arrival, String checkout, boolean rewardCustomer){
     	 addHotelDetails("Lakewood",110,90, 3, 80, 80);
          addHotelDetails("Bridgewood",150, 50, 4, 110, 50);
@@ -28,12 +60,12 @@ public class HotelReservationSystemImpl implements HotelReservationSystemService
         LocalDate checkoutDate = convertStringToDate(checkout);
         cheapestHotelNameList = new ArrayList<>();
         hotelRatingMap = new HashMap<>();
-        hotelRateMap = new HashMap<>();
-        int minRate = Integer.MAX_VALUE;
+        hotelRateMap = new HashMap<String, Long>();
+        minRate = HotelList.stream().map(h -> calculateRewardCost(h, arrival, checkout, rewardCustomer)).min(Long::compare).get();
         for (HotelDetails hotelDetails : HotelList) {
             LocalDate start = arrivalDate;
             LocalDate end = checkoutDate.plusDays(1);
-            int hotelRent = 0;
+            Long hotelRent = Long.valueOf(0);
             while (!(start.equals(end))) {
 
                 int day = start.getDayOfWeek().getValue();
@@ -60,7 +92,7 @@ public class HotelReservationSystemImpl implements HotelReservationSystemService
                 hotelRatingMap.put(hotelDetails.getHotelName(), hotelDetails.getRating());
             }
         }
-        for (Map.Entry<String, Integer> entry : hotelRateMap.entrySet()) {
+        for (Map.Entry<String, Long> entry : hotelRateMap.entrySet()) {
             if (entry.getValue().equals(minRate)) {
                 cheapestHotelNameList.add(entry.getKey());
             }
@@ -73,13 +105,12 @@ public class HotelReservationSystemImpl implements HotelReservationSystemService
     
     public String cheapestBestRatedHotel(String arrival, String checkout, boolean rewardCustomer) {
     	 findCheapestHotel(arrival, checkout, rewardCustomer);
-        Map.Entry<String, Integer> cheapestBestRatedHotel = null;
-        for (Map.Entry<String, Integer> entry : hotelRatingMap.entrySet()) {
-            if (cheapestBestRatedHotel == null || entry.getValue().compareTo(cheapestBestRatedHotel.getValue()) > 0) {
-                cheapestBestRatedHotel = entry;
-            }
-        }
-        return cheapestBestRatedHotel.getKey();
+    	 List<HotelDetails> cheapestHotelsList = HotelList.stream().filter(hotel -> calculateRewardCost(hotel, arrival, checkout, rewardCustomer) == minRate).collect(Collectors.toList());
+         HotelDetails bestRatedHotel = cheapestHotelsList.stream().max(Comparator.comparingInt(HotelDetails::getRating)).get();
+         String cheapestHotel = bestRatedHotel.getHotelName();
+         int bestRating = bestRatedHotel.getRating();
+         System.out.println("Hotel Name: " + cheapestHotel + ", Rating: " + bestRating + " and Total Rate $" + minRate);
+         return cheapestHotel;
     }
 
     public String findBestRatedHotel(String arrival, String checkout, boolean rewardCustomer) {
@@ -125,7 +156,7 @@ public class HotelReservationSystemImpl implements HotelReservationSystemService
         return BestRatedHotel.getHotelName();
     }
     
-    public LocalDate convertStringToDate(String dateString) {
+    public static LocalDate convertStringToDate(String dateString) {
         LocalDate date = null;
         DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("ddMMMyyyy");
         try {
