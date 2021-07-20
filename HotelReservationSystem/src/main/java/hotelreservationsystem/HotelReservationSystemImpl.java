@@ -1,43 +1,62 @@
 package hotelreservationsystem;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 public class HotelReservationSystemImpl implements HotelReservationSystemService {
 
 	ArrayList<HotelDetails> HotelList = new ArrayList<>();
 
-    public String getCheapestHotelAndRate(String arrivalDate,String checkoutDate) throws ParseException {
-        Date StartDate = convertStringToDate(arrivalDate);
-        Date EndDate = convertStringToDate(checkoutDate);
-        long Duration = EndDate.getTime()-StartDate.getTime();
-        int Days = (int) TimeUnit.DAYS.convert(Duration,TimeUnit.MILLISECONDS);
-
-        HotelList.add(new HotelDetails("Lakewood", 110,90));
-        HotelList.add(new HotelDetails("Bridgewood", 150,50));
-        HotelList.add(new HotelDetails("Ridgewood", 220,150));
-
-        for (int hotel = 0; hotel < HotelList.size(); hotel++) {
-            int newRate = HotelList.get(hotel).getWeekdayRate() * (Days+1);
-            HotelList.get(hotel).setWeekdayRate(newRate);
-        }
-        int regularRate = HotelList.stream().min(Comparator.comparing(HotelDetails::getWeekdayRate)).get().getWeekdayRate();
-        String hotelName = HotelList.stream().min(Comparator.comparing(HotelDetails::getWeekdayRate)).get().getHotelName();
-
-        System.out.println(hotelName + ", Total Rates: $" + regularRate);
-
-        return hotelName + ", $" + regularRate;
-
+    public void addHotelDetails(String hotelName, int weekDayRate, int weekendRate) {
+        HotelDetails hotelDetails = new HotelDetails(hotelName, weekDayRate, weekendRate);
+        HotelList.add(hotelDetails);
     }
-    public Date convertStringToDate(String dateString) throws ParseException {
-        Date date;
-        DateFormat dateFormat = new SimpleDateFormat("ddMMMyyyy");
-        date = dateFormat.parse(dateString);
+
+    public ArrayList<String> findCheapestHotelForRegularCustomer(String arrival, String checkout) {
+        addHotelDetails("Lakewood",110,90);
+        addHotelDetails("Bridgewood",150, 50);
+        addHotelDetails("Ridgewood",220, 150);
+        LocalDate arrivalDate = convertStringToDate(arrival);
+        LocalDate checkoutDate = convertStringToDate(checkout);
+        ArrayList<String> cheapestHotelNameList = new ArrayList<>();
+        int minRate = Integer.MAX_VALUE;
+        for (HotelDetails hotelDetails : HotelList) {
+            LocalDate start = arrivalDate;
+            LocalDate end = checkoutDate.plusDays(1);
+            int hotelRent = 0;
+            while (!(start.equals(end))) {
+
+                int day = start.getDayOfWeek().getValue();
+
+                if (day == 6 || day == 7){
+                    hotelRent = hotelRent + hotelDetails.getWeekendRate();
+               }
+               else{
+                    hotelRent = hotelRent + hotelDetails.getWeekdayRate();
+                }
+                start = start.plusDays(1);
+            }
+            if (hotelRent <= minRate) {
+                minRate = hotelRent;
+                cheapestHotelNameList.add(hotelDetails.getHotelName());
+            }
+        }
+        for (String hotel: cheapestHotelNameList){
+            System.out.println("Hotel Name: "+hotel+" Total Rate $"+minRate);
+        }
+        return cheapestHotelNameList;
+    }
+
+    public LocalDate convertStringToDate(String dateString) {
+        LocalDate date = null;
+        DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("ddMMMyyyy");
+        try {
+            date = LocalDate.parse(dateString, dateTimeFormat);
+        } catch (DateTimeParseException e) {
+            e.printStackTrace();
+        }
         return date;
     }
 }

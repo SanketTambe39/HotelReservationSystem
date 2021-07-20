@@ -1,8 +1,8 @@
 package hotelreservationsystem;
-
-import java.text.ParseException;
+import java.util.ArrayList;
 
 public interface HotelReservationSystemService {
 
-	public String getCheapestHotelAndRate(String arrivalDate,String checkoutDate) throws ParseException;
+	 public void addHotelDetails(String hotelName, int weekDayRate, int weekendRate);
+	 public ArrayList<String> findCheapestHotelForRegularCustomer(String arrival, String checkout);
 }
