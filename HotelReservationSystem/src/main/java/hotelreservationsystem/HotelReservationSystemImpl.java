@@ -67,6 +67,40 @@ public class HotelReservationSystemImpl implements HotelReservationSystemService
         return cheapestBestRatedHotel.getKey();
     }
 
+    public String findBestRatedHotelForRegularCustomer(String arrival, String checkout) {
+        addHotelDetails("Lakewood",110,90, 3);
+        addHotelDetails("Bridgewood",150, 50, 4);
+        addHotelDetails("Ridgewood",220, 150, 5);
+        LocalDate arrivalDate = convertStringToDate(arrival);
+        LocalDate checkoutDate = convertStringToDate(checkout);
+        int minRate = Integer.MAX_VALUE;
+        int bestRating = 0;
+        HotelDetails BestRatedHotel = null;
+        for (HotelDetails hotel : HotelList) {
+            LocalDate start = arrivalDate;
+            LocalDate end = checkoutDate.plusDays(1);
+            int hotelRent = 0;
+            while (!(start.equals(end))) {
+
+                int day = start.getDayOfWeek().getValue();
+
+                if (day == 6 || day == 7){
+                    hotelRent = hotelRent + hotel.getWeekendRate();
+                }
+                else{
+                    hotelRent = hotelRent + hotel.getWeekdayRate();
+                }
+                start = start.plusDays(1);
+            }
+            if(hotel.getRating()>bestRating){
+                bestRating = hotel.getRating();
+                BestRatedHotel = hotel;
+            }
+        }
+        System.out.println("Hotel Name: "+BestRatedHotel.getHotelName()+", Rating: "+bestRating+" and Total Rate $"+minRate);
+        return BestRatedHotel.getHotelName();
+    }
+    
     public LocalDate convertStringToDate(String dateString) {
         LocalDate date = null;
         DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("ddMMMyyyy");
