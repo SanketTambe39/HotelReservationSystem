@@ -98,7 +98,7 @@ public class HotelReservationSystemImpl implements HotelReservationSystemService
             }
         }
         for (String hotel: cheapestHotelNameList){
-        	System.out.println("Hotel Name: " + hotel + " Total Rate $" + minRate);
+        	System.out.println("Cheapest Hotel Name: " + hotel + " Total Rate $" + minRate);
         }
         return cheapestHotelNameList;
     }
@@ -109,7 +109,7 @@ public class HotelReservationSystemImpl implements HotelReservationSystemService
          HotelDetails bestRatedHotel = cheapestHotelsList.stream().max(Comparator.comparingInt(HotelDetails::getRating)).get();
          String cheapestHotel = bestRatedHotel.getHotelName();
          int bestRating = bestRatedHotel.getRating();
-         System.out.println("Hotel Name: " + cheapestHotel + ", Rating: " + bestRating + " and Total Rate $" + minRate);
+         System.out.println("Cheapest Best Rated Hotel Name: " + cheapestHotel + ", Rating: " + bestRating + " and Total Rate $" + minRate);
          return cheapestHotel;
     }
 
